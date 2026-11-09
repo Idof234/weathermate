@@ -1,14 +1,30 @@
+# Сборка
 target/
+build/
+out/
 *.class
 *.jar
-*.log
 
-# IDE
+# IntelliJ IDEA
 .idea/
 *.iml
-.vscode/
-.DS_Store
 
-# secrets
+# VS Code / Eclipse
+.vscode/
+.settings/
+.classpath
+.project
+
+# Локальная база данных H2
+data/
+
+# Секреты — никогда не коммитить
+local.properties
 .env
-application-local.yml
+*.env
+
+# Логи и системное
+logs/
+*.log
+.DS_Store
+Thumbs.db

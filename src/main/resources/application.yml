@@ -1,30 +1,55 @@
 spring:
   application:
     name: weathermate
+
+  # Секреты (токен бота) лежат в файле local.properties в корне проекта.
+  # Этот файл есть в .gitignore и НЕ попадает в GitHub. Пример — local.properties.example
+  config:
+    import: optional:file:./local.properties
+
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/weathermate}
-    username: ${DB_USER:weathermate}
-    password: ${DB_PASSWORD:weathermate}
+    # База H2 хранится в файле ./data/weathermate.mv.db и не пропадает после перезапуска.
+    # Ничего устанавливать не нужно. MODE=PostgreSQL — чтобы потом легко перейти на PostgreSQL.
+    url: jdbc:h2:file:./data/weathermate;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+
   jpa:
     hibernate:
-      ddl-auto: validate
+      # Таблицы создаёт Flyway из src/main/resources/db/migration
+      ddl-auto: none
     open-in-view: false
+
   flyway:
     enabled: true
 
+  h2:
+    console:
+      # Просмотр базы в браузере: http://localhost:8080/h2-console
+      # JDBC URL: jdbc:h2:file:./data/weathermate, пользователь sa, пароль пустой
+      enabled: true
+
 server:
-  port: ${PORT:8080}
+  port: 8080
+
+logging:
+  file:
+    # Логи пишутся ещё и в файл logs/weathermate.log
+    name: logs/weathermate.log
+  level:
+    com.weathermate: INFO
 
 app:
+  # Токен от @BotFather. Впиши его в local.properties: app.bot-token=...
   bot-token: ${BOT_TOKEN:}
-  web-app-url: ${WEB_APP_URL:https://example.com}
+  # Адрес Mini App (https!), например https://xxxx.trycloudflare.com (см. README)
+  web-app-url: ${WEB_APP_URL:}
+  # Сколько минут хранить погоду в базе, прежде чем снова спрашивать Open-Meteo
   cache-ttl-minutes: 30
-  dev-mode: ${DEV_MODE:false}
+  # Режим разработки: открыть интерфейс в обычном браузере (http://localhost:8080/?dev=123456789).
+  # Включай только в local.properties, на сервере не включай!
+  dev-mode: false
 
 openmeteo:
   forecast-url: https://api.open-meteo.com/v1/forecast
   geocoding-url: https://geocoding-api.open-meteo.com/v1/search
-
-logging:
-  level:
-    com.weathermate: INFO

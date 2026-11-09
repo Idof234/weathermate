@@ -1,0 +1,12 @@
+# Скопируй этот файл в local.properties (в ту же папку) и впиши свои значения.
+# local.properties не попадает в GitHub, там можно хранить токен.
+
+# Токен от @BotFather
+app.bot-token=ВСТАВЬ_СЮДА_ТОКЕН_ОТ_BOTFATHER
+
+# Адрес от cloudflared (меняется при каждом запуске cloudflared)
+app.web-app-url=https://something.trycloudflare.com
+
+# Режим разработки: интерфейс открывается в обычном браузере без Telegram.
+# Только для своего компьютера!
+#app.dev-mode=true
