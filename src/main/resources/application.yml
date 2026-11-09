@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: weathermate
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/weathermate}
+    username: ${DB_USER:weathermate}
+    password: ${DB_PASSWORD:weathermate}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+server:
+  port: ${PORT:8080}
+
+app:
+  bot-token: ${BOT_TOKEN:}
+  web-app-url: ${WEB_APP_URL:https://example.com}
+  cache-ttl-minutes: 30
+  dev-mode: ${DEV_MODE:false}
+
+openmeteo:
+  forecast-url: https://api.open-meteo.com/v1/forecast
+  geocoding-url: https://geocoding-api.open-meteo.com/v1/search
+
+logging:
+  level:
+    com.weathermate: INFO
