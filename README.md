@@ -1,7 +1,7 @@
 # 🌤 WeatherMate
 
 Telegram-бот с погодой и **Mini App** (веб-приложение внутри Telegram).
-Бэкенд полностью на **Java 21 + Spring Boot 3**, база данных **PostgreSQL**.
+Бэкенд полностью на **Java 21 + Spring Boot 3**, база данных **H2** (файл, ничего устанавливать не нужно).
 
 ## Возможности
 
@@ -25,7 +25,7 @@ Telegram-бот с погодой и **Mini App** (веб-приложение �
 
 ```
 Telegram ──► WeatherBot (long polling) ─┐
-                                        ├─► Services ─► PostgreSQL (Flyway)
+                                        ├─► Services ─► H2 / PostgreSQL (Flyway)
 Mini App (HTML/JS) ──► REST API /api ───┘      │
                                                └─► Open-Meteo API (погода + геокодинг)
 ```
@@ -79,40 +79,57 @@ Mini App отправляет на сервер `initData` от Telegram в за
 | DELETE | `/api/me/locations/{id}` | удалить из избранного |
 | GET / PUT | `/api/me/settings` | настройки |
 
-## Запуск
+## Запуск (IntelliJ IDEA + cloudflared, без Docker)
 
-### 1. Создать бота
-1. Напиши [@BotFather](https://t.me/BotFather), выполни `/newbot` и получи токен.
-2. Скопируй `.env.example` в `.env` и впиши `BOT_TOKEN`.
+1. Установи **JDK 21** и **IntelliJ IDEA**.
+2. Открой проект: **File → New → Project from Version Control**, вставь ссылку на этот репозиторий.
+   IntelliJ сам скачает зависимости (Maven). Подожди, пока внизу закончится индексация.
+3. Создай бота у [@BotFather](https://t.me/BotFather) (`/newbot`) и получи токен.
+4. В корне проекта скопируй файл `local.properties.example` в `local.properties` и впиши токен:
+   ```properties
+   app.bot-token=123456:ABC...
+   ```
+   Файл `local.properties` есть в `.gitignore`, поэтому в GitHub он не попадёт. **Никогда не коммить токен.**
+5. Запусти `WeatherMateApplication` (зелёная стрелка рядом с `main`).
+6. Напиши своему боту `/start`. Команды `/weather` и `/week` работают уже сейчас,
+   а город можно выбрать, отправив боту геолокацию 📍
 
-### 2. Получить HTTPS-адрес
-Telegram открывает Mini App только по HTTPS. Для разработки подойдёт туннель:
-```bash
-cloudflared tunnel --url http://localhost:8080
-# или
-ngrok http 8080
+Без токена приложение тоже запускается: работает API, а бот выключен.
+
+База данных **H2** хранится в файле `data/weathermate.mv.db`, ничего устанавливать не нужно.
+Посмотреть таблицы можно в браузере: <http://localhost:8080/h2-console>
+(JDBC URL `jdbc:h2:file:./data/weathermate`, пользователь `sa`, пароль пустой).
+
+### Открыть Mini App в Telegram
+
+Telegram открывает Mini App только по **https**. Для разработки удобно сделать временный
+публичный адрес через [cloudflared](https://github.com/cloudflare/cloudflared/releases)
+(регистрация не нужна, хватит одного .exe):
+
 ```
-Впиши полученный адрес в `WEB_APP_URL` в `.env`.
-
-### 3. Запустить
-
-**Через Docker (проще всего):**
-```bash
-docker compose up --build
+.\cloudflared-windows-amd64.exe tunnel --url http://localhost:8080
 ```
 
-**Без Docker:** нужны JDK 21, Maven и PostgreSQL.
-```bash
-docker compose up -d db        # или свой PostgreSQL
-export $(cat .env | xargs)     # Windows: задай переменные в IDE
-mvn spring-boot:run
+Он покажет адрес вида `https://something.trycloudflare.com`. Впиши его в `local.properties`:
+
+```properties
+app.web-app-url=https://something.trycloudflare.com
 ```
 
-Напиши боту `/start` и нажми «Открыть WeatherMate».
+Перезапусти приложение. Бот сам поставит кнопку «Погода» слева от поля ввода.
+Адрес меняется при каждом запуске cloudflared, тогда его нужно обновить.
 
-### Тестирование в обычном браузере
-Запусти с `DEV_MODE=true` и открой `http://localhost:8080/?dev=1`.
-Тогда API принимает заголовок `X-Dev-User-Id` вместо подписи Telegram. В продакшене не включать!
+### Посмотреть в браузере (без Telegram)
+
+Добавь в `local.properties`:
+
+```properties
+app.dev-mode=true
+```
+
+Запусти приложение и открой <http://localhost:8080/?dev=123456789> (вместо числа можно свой Telegram ID,
+узнать его можно у [@userinfobot](https://t.me/userinfobot)). Это режим разработки:
+запросы без подписи Telegram выполняются от имени этого пользователя. **На сервере его не включай.**
 
 ## Тесты
 
@@ -120,9 +137,9 @@ mvn spring-boot:run
 mvn test
 ```
 Юнит-тесты: проверка подписи initData, советы по одежде, предупреждения, коды погоды, расписание рассылки.
-Тест контекста запускает приложение на H2. Тесты запускаются на GitHub Actions при каждом push.
+Тест контекста запускает приложение на H2. Тесты запускаются на GitHub Actions при каждом push. В IntelliJ: правый клик по папке `src/test/java` → **Run 'All Tests'**.
 
 ## Технологии
 
-Java 21 · Spring Boot 3 (Web, Data JPA, Validation, Scheduling) · PostgreSQL · Flyway ·
-TelegramBots 9 · Open-Meteo API · JUnit 5 · Docker · GitHub Actions
+Java 21 · Spring Boot 3 (Web, Data JPA, Validation, Scheduling) · H2 (совместима с PostgreSQL) · Flyway ·
+TelegramBots 9 · Open-Meteo API · JUnit 5 · GitHub Actions
