@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:weathermate;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+
+app:
+  bot-token: ""
+  web-app-url: https://example.com
+  cache-ttl-minutes: 30
+  dev-mode: false
+
+openmeteo:
+  forecast-url: https://api.open-meteo.com/v1/forecast
+  geocoding-url: https://geocoding-api.open-meteo.com/v1/search
