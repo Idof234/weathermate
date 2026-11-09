@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>WeatherMate</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+
+    <!-- Screen 1: weather -->
+    <section id="screen-weather" class="screen active">
+        <div id="weather-empty" class="empty hidden">
+            <div class="empty-icon">🌍</div>
+            <p>Ты ещё не выбрал город</p>
+            <button class="btn" data-goto="cities">Выбрать город</button>
+        </div>
+
+        <div id="weather-content" class="hidden">
+            <header class="hero">
+                <button id="city-switch" class="city-name" data-goto="cities"></button>
+                <div class="hero-main">
+                    <span id="now-icon" class="hero-icon"></span>
+                    <span id="now-temp" class="hero-temp"></span>
+                </div>
+                <div id="now-desc" class="hero-desc"></div>
+                <div id="now-details" class="hero-details"></div>
+            </header>
+
+            <div id="alerts" class="card alert hidden"></div>
+
+            <div class="card">
+                <h3>По часам</h3>
+                <div id="hourly" class="hourly"></div>
+            </div>
+
+            <div class="card">
+                <h3>7 дней</h3>
+                <div id="daily"></div>
+            </div>
+
+            <div class="card">
+                <h3>👕 Что надеть</h3>
+                <ul id="advice" class="advice"></ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screen 2: cities -->
+    <section id="screen-cities" class="screen">
+        <div class="card">
+            <input id="search" class="input" type="search" placeholder="Найти город…" autocomplete="off">
+            <ul id="search-results" class="list"></ul>
+            <button id="geo-btn" class="btn btn-secondary">📍 Моё местоположение</button>
+        </div>
+        <div class="card">
+            <h3>Мои города</h3>
+            <ul id="favourites" class="list"></ul>
+            <p id="favourites-empty" class="muted hidden">Пока пусто. Найди свой город выше.</p>
+        </div>
+    </section>
+
+    <!-- Screen 3: settings -->
+    <section id="screen-settings" class="screen">
+        <div class="card">
+            <h3>Единицы</h3>
+            <div class="segmented" id="units">
+                <button data-value="CELSIUS">°C</button>
+                <button data-value="FAHRENHEIT">°F</button>
+            </div>
+        </div>
+        <div class="card">
+            <label class="row">
+                <span>Ежедневный прогноз</span>
+                <input type="checkbox" id="daily-enabled" class="switch">
+            </label>
+            <label class="row">
+                <span>Время</span>
+                <input type="time" id="notify-time" class="input input-time">
+            </label>
+            <label class="row">
+                <span>Предупреждения о плохой погоде</span>
+                <input type="checkbox" id="alerts-enabled" class="switch">
+            </label>
+            <p class="muted">Часовой пояс: <span id="timezone"></span></p>
+        </div>
+    </section>
+</main>
+
+<nav class="tabbar">
+    <button data-goto="weather" class="active">🌤<span>Погода</span></button>
+    <button data-goto="cities">🏙<span>Города</span></button>
+    <button data-goto="settings">⚙️<span>Настройки</span></button>
+</nav>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
