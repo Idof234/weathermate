@@ -14,10 +14,12 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.methods.menubutton.SetChatMenuButton;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.menubutton.MenuButtonWebApp;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -138,10 +140,19 @@ public class WeatherBot implements SpringLongPollingBot, LongPollingSingleThread
         send(chatId, format.apply(weather), openAppKeyboard());
     }
 
+    /** Telegram opens Mini Apps only by https; without it the bot works with commands only. */
+    private boolean webAppAvailable() {
+        String url = properties.webAppUrl();
+        return url != null && url.startsWith("https://");
+    }
+
     private InlineKeyboardMarkup openAppKeyboard() {
+        if (!webAppAvailable()) {
+            return null;
+        }
         InlineKeyboardButton button = InlineKeyboardButton.builder()
                 .text("🌤 Открыть WeatherMate")
-                .webApp(WebAppInfo.builder().url(properties.webAppUrl()).build())
+                .webApp(new WebAppInfo(properties.webAppUrl()))
                 .build();
         return InlineKeyboardMarkup.builder().keyboardRow(new InlineKeyboardRow(button)).build();
     }
@@ -169,6 +180,23 @@ public class WeatherBot implements SpringLongPollingBot, LongPollingSingleThread
                     new BotCommand("help", "Помощь"))).build());
         } catch (TelegramApiException e) {
             log.warn("Cannot register bot commands: {}", e.getMessage());
+        }
+
+        if (!webAppAvailable()) {
+            log.warn("app.web-app-url is not set (needs https): the Mini App button is disabled");
+            return;
+        }
+        // "Погода" button to the left of the message field, opens the Mini App
+        try {
+            telegram.execute(SetChatMenuButton.builder()
+                    .menuButton(MenuButtonWebApp.builder()
+                            .text("Погода")
+                            .webAppInfo(new WebAppInfo(properties.webAppUrl()))
+                            .build())
+                    .build());
+            log.info("Mini App button set: {}", properties.webAppUrl());
+        } catch (TelegramApiException e) {
+            log.warn("Cannot set the Mini App menu button: {}", e.getMessage());
         }
     }
 
